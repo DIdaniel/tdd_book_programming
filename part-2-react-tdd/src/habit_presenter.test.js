@@ -13,7 +13,7 @@ describe("HabitPresenter", () => {
 
   // 초기화
   beforeEach(() => {
-    presenter = new HabitPresenter(habits);
+    presenter = new HabitPresenter(habits, 3);
     // Mock function
     update = jest.fn();
   });
@@ -26,6 +26,13 @@ describe("HabitPresenter", () => {
     presenter.increment(habits[0], update);
     expect(presenter.getHabtis()[0].count).toBe(2);
     checkUpdateIsCalled();
+  });
+
+  it("max habits 리미트가 100 초과가 되면 에러를 던진다", () => {
+    presenter.add("Eating", update);
+    expect(() => {
+      presenter.add("Eating", update);
+    }).toThrow(`습관의 갯수는 3 이상이 될 수 없습니다!`);
   });
 
   it("habit count를 감소하고, update 콜백을 호출한다", () => {
@@ -59,13 +66,23 @@ describe("HabitPresenter", () => {
     checkUpdateIsCalled();
   });
 
-  it("모든 카운트 0으로 reset", () => {
-    presenter.reset(update);
+  describe("reset", () => {
+    it("모든 카운트 0으로 reset", () => {
+      presenter.reset(update);
 
-    expect(presenter.getHabtis()[0].count).toBe(0);
-    expect(presenter.getHabtis()[1].count).toBe(0);
+      expect(presenter.getHabtis()[0].count).toBe(0);
+      expect(presenter.getHabtis()[1].count).toBe(0);
 
-    checkUpdateIsCalled();
+      checkUpdateIsCalled();
+    });
+
+    it("카운트가 0이면, 새로운 object를 생성하지 않는다", () => {
+      const habits = presenter.getHabtis();
+      presenter.reset(update);
+      const updatedHabits = presenter.getHabtis();
+
+      expect(updatedHabits[1]).toBe(habits[1]);
+    });
   });
 
   // 반복적인 것을 함수에 넣고 돌리기
